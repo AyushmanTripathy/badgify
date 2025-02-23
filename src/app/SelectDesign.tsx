@@ -18,7 +18,7 @@ interface DesignState {
   };
 }
 
-function createDesignState(verifyURL: string, name: string): DesignState {
+export function createDesignState(verifyURL: string, name: string): DesignState {
   return {
     verifyURL,
     name: {
@@ -57,8 +57,7 @@ function paintName(ctx: CanvasRenderingContext2D, state: DesignState) {
   ctx.fillText(state.name.value, state.name.x, state.name.size + state.name.y);
 }
 
-export function SelectDesign({ background, verifyURL, name }) {
-  const [state, setState] = useState(createDesignState(verifyURL, name));
+export function SelectDesign({ state, setState, background }) {
   const imgRef: RefObject<HTMLImageElement | null> = useRef(null);
   const canvas: RefObject<HTMLCanvasElement | null> = useRef(null);
 

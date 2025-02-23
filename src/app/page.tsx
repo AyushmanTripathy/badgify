@@ -2,9 +2,13 @@
 
 import { useState } from "react";
 import { encode, hashFunction } from "@/lib/base64URL";
-import { SelectDesign } from "./SelectDesign";
+import { createDesignState, SelectDesign } from "./SelectDesign";
 
-function InputEventData({ setFile, name, setName, setVerifyURL }) {
+export default function Home() {
+  const [background, setBackground] = useState("");
+  const [name, setName] = useState("");
+  const [designState, setDesignState] = useState(createDesignState("", ""));
+
   const [privateKey, setPrivateKey] = useState("");
   const [title, setTitle] = useState("");
   const [eventName, setEventName] = useState("");
@@ -19,8 +23,34 @@ function InputEventData({ setFile, name, setName, setVerifyURL }) {
     const info = encode(jsonInput);
     const hash = hashFunction(info, privateKey);
     const token = info + "." + hash;
-    setVerifyURL(window.location.origin + "/" + token);
+
+    const newState = createDesignState(
+      window.location.origin + "/" + token,
+      name
+    );
+    const oldState = {...designState};
+    oldState.name.value = name;
+    oldState.qr.code = newState.qr.code;
+    oldState.verifyURL = newState.verifyURL;
+    setDesignState(oldState);
   }
+
+  function reset() {
+    setName("");
+    setDesignState({ ...designState, verifyURL: "" });
+  }
+
+  if (designState.verifyURL)
+    return (
+      <>
+        <button onClick={reset}> Reuse </button>
+        <SelectDesign
+          background={background}
+          state={designState}
+          setState={setDesignState}
+        />
+      </>
+    );
 
   return (
     <form
@@ -32,6 +62,7 @@ function InputEventData({ setFile, name, setName, setVerifyURL }) {
       <input
         className="border border-black"
         onChange={(e) => setPrivateKey(e.target.value)}
+        value={privateKey}
         required
       />
       <label> Name </label>
@@ -39,6 +70,7 @@ function InputEventData({ setFile, name, setName, setVerifyURL }) {
         type="text"
         placeholder="Jason Statham"
         onChange={(e) => setName(e.target.value)}
+        value={name}
         required
       />
       <label> Title </label>
@@ -46,6 +78,7 @@ function InputEventData({ setFile, name, setName, setVerifyURL }) {
         type="text"
         placeholder="Certificate of Appreciation"
         onChange={(e) => setTitle(e.target.value)}
+        value={title}
         required
       />
       <label> Event Name </label>
@@ -53,22 +86,22 @@ function InputEventData({ setFile, name, setName, setVerifyURL }) {
         type="text"
         placeholder="Smash The Stone"
         onChange={(e) => setEventName(e.target.value)}
+        value={eventName}
         required
       />
 
-      <input type="file" accept="image/*" required onChange={e => setFile(e.target.files[0])}/>
+      {Boolean(background) || (
+        <input
+          type="file"
+          accept="image/*"
+          required
+          onChange={(e) => setBackground(e.target.files[0])}
+        />
+      )}
+
+      {Boolean(background) && <p> {background.name} </p>}
 
       <button type="submit"> Generate </button>
     </form>
   );
-}
-
-export default function Home() {
-  const [verifyURL, setVerifyURL] = useState("");
-  const [background, setBackground] = useState("");
-  const [name, setName] = useState("");
-
-  if (verifyURL) return <SelectDesign background={background} verifyURL={verifyURL} name={name} />;
-
-  return <InputEventData name={name} setVerifyURL={setVerifyURL} setFile={setBackground} setName={setName} />;
 }
