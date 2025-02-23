@@ -46,7 +46,7 @@ const DraggableDiv = forwardRef(({ initX, initY, onDrag }, ref) => {
   );
 });
 
-export function DraggableContainerDiv({ name, height, width, initX, initY, onDrag }) {
+export function DraggableContainerDiv({ height, width, initX, initY, onDrag }) {
   const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {

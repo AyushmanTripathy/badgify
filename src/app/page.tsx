@@ -4,7 +4,7 @@ import { useState } from "react";
 import { encode, hashFunction } from "@/lib/base64URL";
 import { SelectDesign } from "./SelectDesign";
 
-function InputEventData({ setName, setVerifyURL }) {
+function InputEventData({ setFile, name, setName, setVerifyURL }) {
   const [privateKey, setPrivateKey] = useState("");
   const [title, setTitle] = useState("");
   const [eventName, setEventName] = useState("");
@@ -56,6 +56,8 @@ function InputEventData({ setName, setVerifyURL }) {
         required
       />
 
+      <input type="file" accept="image/*" required onChange={e => setFile(e.target.files[0])}/>
+
       <button type="submit"> Generate </button>
     </form>
   );
@@ -63,9 +65,10 @@ function InputEventData({ setName, setVerifyURL }) {
 
 export default function Home() {
   const [verifyURL, setVerifyURL] = useState("");
+  const [background, setBackground] = useState("");
   const [name, setName] = useState("");
 
-  if (verifyURL) return <SelectDesign verifyURL={verifyURL} name={name} />;
+  if (verifyURL) return <SelectDesign background={background} verifyURL={verifyURL} name={name} />;
 
-  return <InputEventData setVerifyURL={setVerifyURL} setName={setName} />;
+  return <InputEventData name={name} setVerifyURL={setVerifyURL} setFile={setBackground} setName={setName} />;
 }

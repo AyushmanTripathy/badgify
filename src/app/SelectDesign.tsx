@@ -57,9 +57,22 @@ function paintName(ctx: CanvasRenderingContext2D, state: DesignState) {
   ctx.fillText(state.name.value, state.name.x, state.name.size + state.name.y);
 }
 
-export function SelectDesign({ verifyURL, name }) {
+export function SelectDesign({ background, verifyURL, name }) {
   const [state, setState] = useState(createDesignState(verifyURL, name));
+  const imgRef: RefObject<HTMLImageElement | null> = useRef(null);
   const canvas: RefObject<HTMLCanvasElement | null> = useRef(null);
+
+  useEffect(() => {
+    if (!canvas.current || !imgRef.current) return;
+
+    imgRef.current.onload = () => {
+      canvas.current.height = imgRef.current.height;
+      canvas.current.width = imgRef.current.width;
+      imgRef.current.onload = () => {};
+
+      setState({ ...state });
+    }
+  }, []);
 
   useEffect(() => {
     const ctx = canvas.current?.getContext("2d");
@@ -79,7 +92,11 @@ export function SelectDesign({ verifyURL, name }) {
   function downloadCanvas() {
     const ctx = canvas.current?.getContext("2d");
     if (!ctx || !canvas.current) return;
+
+    ctx.clearRect(0, 0, canvas.current.width, canvas.current.height);
+    ctx.drawImage(imgRef.current, 0, 0);
     paintName(ctx, state);
+    paintQRCode(ctx, state);
 
     const a = document.createElement("a");
     a.download = "certificate.jpg";
@@ -92,6 +109,7 @@ export function SelectDesign({ verifyURL, name }) {
   return (
     <div className="h-screen w-screen flex flex-col justify-center items-center">
       <button onClick={downloadCanvas}> Download </button>
+      <label> QR Code Size: </label>
       <input
         type="number"
         min="1"
@@ -105,15 +123,12 @@ export function SelectDesign({ verifyURL, name }) {
         }
       />
 
-      <input type="file" accept="image/*" />
-
-      <div className="relative h-[720px] w-[1080px]">
+      <div className="relative">
+        <img style={{ opacity: 1 }} ref={imgRef} src={URL.createObjectURL(background)} alt="Background Image" />
         <canvas
           className="absolute border border-black"
           style={{ top: 0, left: 0 }}
           ref={canvas}
-          height={720}
-          width={1080}
         ></canvas>
         <DraggableTextDiv
           name={state.name.value}
